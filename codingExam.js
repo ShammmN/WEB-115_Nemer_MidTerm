@@ -5,52 +5,49 @@ const loanAmount = document.getElementById("loanAmount")
 const downPayment = document.getElementById("downPayment")
 const loanTerm = document.getElementById("loanTerm")
 
+button1.addEventListener('click', function() {
+    let loanAmountValue = parseFloat(loanAmount.value) - parseFloat(downPayment.value)
+    let loanTermValue = parseInt(loanTerm.value)
 
-button1.addEventListener('click', function(){
-    loanAmount.value.toFixed(2)
-    downPayment.value.toFixed(2)
-    let monthlyPay = ((0.0557/12) * loanAmount) / (1-Math.pow(1 + (0.0575/12), (loanTerm * -12))).toFixed(2)
-    if (loanTerm != 15 || loanTerm != 30){
+    if (loanTermValue !== 15 && loanTermValue !== 30) {
         alert("Loan term is not 15 or 30")
+        return;
     }
 
+    let interestRate = 0.0575
+    let monthlyRate = interestRate / 12
 
-    let loanP = document.createElement("p")
-    loanP.textContent = "Mortgage term in years: " + loanTerm.value
-    results.appendChild(loanP)
+    let monthlyPay = (loanAmountValue*monthlyRate)/(1 - Math.pow(1 + monthlyRate, - loanTermValue * 12))
+    monthlyPay = parseFloat(monthlyPay.toFixed(2))
 
-    let rateP = document.createElement("p")
-    rateP.textContent = "Mortgage interest rate: 5.75%"
-    results.appendChild(rateP)
 
-    let mortgageAmP = document.createElement("p")
-    let mortgageAmount = loanAmount + loanAmount * 1.0575
-    mortgageAmP.textContent = mortgageAmount
-    results.appendChild(mortagageAmP)
+    results.appendChild(createP("Mortgage term in years: " + loanTermValue))
+    results.appendChild(createP("Mortgage interest rate: 5.75%"))
+    results.appendChild(createP("Monthly payment: " + monthlyPay.toFixed(2)))
 
-    let interestAmP = document.createElement("p")
-    let interestAmount = (monthlyPay * loanTerm*12) - loanAmount
-    interestAmP.textContent = interestAmount
-    results.appendChild(interestAmP)
+    let totalInterestPaid = 0
+    let loanBalance = loanAmountValue
 
-    let totMortgageAmP = document.createElement("p")
-    let totalMortgage = loanAmount + interestAmount
-    totMortgageAmP.textContent = totalMortgage
-    results.appendChild(totMortgageAmP)
+    for (let i = 0; i <= loanTermValue * 12; i++) {
+        let interestPaid = loanBalance * monthlyRate
+        let principalPaid = monthlyPay - interestPaid
 
-    let monthlyLoanBalaP = document.createElement("p")
-    let loanBalance = totalMortgage - monthlyPay
-    monthlyLoanBalaP.textContent = loanBalance
-    results.appendChild(monthlyLoanBalaP)
-    
-    for (let i=0; i <loanTerm; i++ ){
-        let interesttt = (loanAmount * .0575) /12
-        let principal = monthlyPay - interesttt
-        
+        loanBalance -= principalPaid
+        totalInterestPaid += interestPaid
+        results.appendChild(createP(`Month ${i + 1}: Remaining balance: ${loanBalance.toFixed(2)}`))
 
+        if (loanBalance <= 0) {
+            results.appendChild(createP("Ending, no more payments! (balance is 0)"))
+            break;
+        }
     }
 
-    if(monthlyLoanBalaP == 0){
-        results.textContent = "Ending no more payments (balance is 0)"
-    }
+    results.appendChild(createP("Total interest paid: " + totalInterestPaid.toFixed(2)))
+    results.appendChild(createP("Total mortgage paid: " + (loanAmountValue + totalInterestPaid).toFixed(2)))
 })
+
+function createP(text) {
+    let newP = document.createElement("p")
+    newP.textContent = text
+    return newP;
+}
